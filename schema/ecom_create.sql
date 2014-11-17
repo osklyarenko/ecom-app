@@ -10,7 +10,7 @@ CREATE TABLE product (
 	name VARCHAR(64) NOT NULL,
 	description VARCHAR(256),
 	price decimal NOT NULL,
-	created_timepoint TIMESTAMP NOT NULL
+	created_timepoint TIMESTAMP NOT NULL DEFAULT now()
 );
 
 CREATE UNIQUE INDEX product_name_idx ON product(name);
@@ -24,7 +24,7 @@ CREATE SEQUENCE product_id_seq;
 CREATE TABLE warehouse (
 	product_id INTEGER PRIMARY KEY,
 	quantity INTEGER NOT NULL,
-	last_updated_timepoint TIMESTAMP NOT NULL
+	last_updated_timepoint TIMESTAMP NOT NULL DEFAULT now()
 );
 
 ALTER TABLE warehouse ADD CONSTRAINT warehouse_product_fk FOREIGN KEY(product_id) REFERENCES product(product_id) ON UPDATE CASCADE ON DELETE RESTRICT;
@@ -34,11 +34,12 @@ ALTER TABLE warehouse ADD CONSTRAINT warehouse_product_fk FOREIGN KEY(product_id
 CREATE TABLE app_user (
 	app_user_id INTEGER PRIMARY KEY,
 	login VARCHAR(32) NOT NULL,
+	password VARCHAR(16) NOT NULL,
 	first_name VARCHAR(32) NOT NULL,
 	last_name VARCHAR(32) NOT NULL,
 	email VARCHAR(64) NOT NULL,
 	phone_number CHAR(13) NOT NULL,
-	registration_timepoint TIMESTAMP NOT NULL 
+	registration_timepoint TIMESTAMP NOT NULL DEFAULT now()
 );
 
 CREATE UNIQUE INDEX app_user_login_idx ON app_user(login);
@@ -51,7 +52,7 @@ CREATE SEQUENCE app_user_id_seq;
 CREATE TABLE sale_order (
 	sale_order_id INTEGER PRIMARY KEY,
 	user_id INTEGER NOT NULL,
-	created_timepoint TIMESTAMP NOT NULL,
+	created_timepoint TIMESTAMP NOT NULL DEFAULT now(),
 	status VARCHAR(16) NOT NULL,
 	total decimal NOT NULL
 );
@@ -97,16 +98,7 @@ CREATE SEQUENCE delivery_id_seq;
 -- COMMIT;
 ROLLBACK;
 
--- PATCHES
-
-BEGIN;
-
-ALTER TABLE app_user ADD COLUMN password VARCHAR(16) NOT NULL;
-
--- COMMIT;
-ROLLBACK;
-
--- TODO: ADD DEFAULTS FOR DATE FIELDS
 -- TODO: ENCODE PASSWORDS
+
 
 
