@@ -1,5 +1,7 @@
 ﻿BEGIN;
 
+-- Test data
+
 INSERT INTO app_user(app_user_id, login, password, first_name, last_name, email, phone_number, registration_timepoint)
 VALUES(nextval('app_user_id_seq'), 'test1', 'test1', 'f_test1', 'l_test1', 'test1@host.com', '+380981742284', now()); 
 
