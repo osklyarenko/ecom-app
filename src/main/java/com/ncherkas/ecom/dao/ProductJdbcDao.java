@@ -1,11 +1,11 @@
 package com.ncherkas.ecom.dao;
 
+import com.ncherkas.ecom.domain.Domain;
 import com.ncherkas.ecom.domain.Product;
 import com.ncherkas.ecom.domain.ProductType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -31,19 +31,19 @@ public class ProductJdbcDao {
         this.jdbcTemplate = checkNotNull(jdbcTemplate, "Constructor arg 'jdbcTemplate' mustn't be null");
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Transactional(readOnly = true)
     public List<Product> getAllProducts() {
         return jdbcTemplate.query(SELECT_ALL_QUERY, (rs, index) -> {
             String typeValue = rs.getString("type");
-            return new Product(
-                    rs.getInt("product_id"),
-                    ProductType.fromValue(typeValue).orElseThrow(() -> new IllegalStateException("Failed to resolve " +
-                            "product type '" + typeValue + "'")),
-                    rs.getString("name"),
-                    rs.getString("description"),
-                    rs.getBigDecimal("price"),
-                    LocalDateTime.parse(rs.getString("created_timepoint"), TIMEPOINT_FORMATTER)
-            );
+
+            return Domain.newProduct()
+                    .setId(rs.getInt("product_id"))
+                    .setType(ProductType.fromValue(typeValue).orElseThrow(() -> new IllegalStateException("Failed to " +
+                            "resolve product type '" + typeValue + "'")))
+                    .setName(rs.getString("name"))
+                    .setDescription(rs.getString("description"))
+                    .setPrice(rs.getBigDecimal("price"))
+                    .setCreatedTimepoint(LocalDateTime.parse(rs.getString("created_timepoint"), TIMEPOINT_FORMATTER));
         });
     }
 }
