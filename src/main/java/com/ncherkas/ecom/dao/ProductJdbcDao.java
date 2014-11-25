@@ -1,11 +1,12 @@
 package com.ncherkas.ecom.dao;
 
-import com.ncherkas.ecom.domain.Domain;
+import com.ncherkas.ecom.domain.DomainEntities;
 import com.ncherkas.ecom.domain.Product;
 import com.ncherkas.ecom.domain.ProductType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -18,9 +19,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Created by nazariycherkas on 11/20/14.
  */
 @Repository
-public class ProductJdbcDao {
+@Transactional(propagation = Propagation.MANDATORY)
+public class ProductJdbcDao implements ProductDao {
 
-    private static final DateTimeFormatter TIMEPOINT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSS");
+    private static final DateTimeFormatter TIMEPOINT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.n");
 
     private static final String SELECT_ALL_QUERY = "SELECT * FROM product";
 
@@ -28,22 +30,20 @@ public class ProductJdbcDao {
 
     @Autowired
     public ProductJdbcDao(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = checkNotNull(jdbcTemplate, "Constructor arg 'jdbcTemplate' mustn't be null");
+        this.jdbcTemplate = checkNotNull(jdbcTemplate, "Arg 'jdbcTemplate' mustn't be null");
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(propagation = Propagation.MANDATORY, readOnly = true)
+    @Override
     public List<Product> getAllProducts() {
-        return jdbcTemplate.query(SELECT_ALL_QUERY, (rs, index) -> {
-            String typeValue = rs.getString("type");
-
-            return Domain.newProduct()
+        return jdbcTemplate.query(SELECT_ALL_QUERY, (rs, index) ->
+            DomainEntities.newProduct()
                     .setId(rs.getInt("product_id"))
-                    .setType(ProductType.fromValue(typeValue).orElseThrow(() -> new IllegalStateException("Failed to " +
-                            "resolve product type '" + typeValue + "'")))
+                    .setType(ProductType.fromValue(rs.getString("type")).orElseThrow(IllegalStateException::new))
                     .setName(rs.getString("name"))
                     .setDescription(rs.getString("description"))
                     .setPrice(rs.getBigDecimal("price"))
-                    .setCreatedTimepoint(LocalDateTime.parse(rs.getString("created_timepoint"), TIMEPOINT_FORMATTER));
-        });
+                    .setCreatedTimepoint(LocalDateTime.parse(rs.getString("created_timepoint"), TIMEPOINT_FORMATTER))
+        );
     }
 }

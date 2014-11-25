@@ -1,6 +1,6 @@
 package com.ncherkas.ecom;
 
-import com.ncherkas.ecom.dao.ProductJdbcDao;
+import com.ncherkas.ecom.dao.ProductDao;
 import com.ncherkas.ecom.domain.Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -20,7 +20,7 @@ import java.util.List;
 @RestController
 public class App {
 
-    private ProductJdbcDao productJdbcDao;
+    private ProductDao productDao;
 
     @RequestMapping("/")
     public String test() {
@@ -29,12 +29,12 @@ public class App {
 
     @RequestMapping("/products")
     public List<Product> getAllProducts() {
-        return productJdbcDao.getAllProducts();
+        return productDao.getAllProducts();
     }
 
     @Autowired
-    public void setProductJdbcDao(ProductJdbcDao productJdbcDao) {
-        this.productJdbcDao = productJdbcDao;
+    public void setProductDao(ProductDao productDao) {
+        this.productDao = productDao;
     }
 
     public static void main(String[] args) {

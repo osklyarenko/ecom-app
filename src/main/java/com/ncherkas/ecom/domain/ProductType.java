@@ -1,5 +1,6 @@
 package com.ncherkas.ecom.domain;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -25,11 +26,8 @@ public enum ProductType {
     }
 
     public static Optional<ProductType> fromValue(String value) {
-        for (ProductType type : values()) {
-            if (type.getValue().equals(value)) {
-                return Optional.of(type);
-            }
-        }
-        return Optional.empty();
+        return Arrays.stream(values())
+                .filter(productType -> productType.getValue().equals(value))
+                .findFirst();
     }
 }
