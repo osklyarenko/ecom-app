@@ -9,8 +9,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -22,15 +20,19 @@ import static com.google.common.base.Preconditions.checkNotNull;
 @Transactional(propagation = Propagation.MANDATORY)
 public class ProductJdbcDao implements ProductDao {
 
-    private static final DateTimeFormatter TIMEPOINT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.n");
-
     private static final String SELECT_ALL_QUERY = "SELECT * FROM product";
+    private static final String INSERT_PRODUCT_QUERY = "INSERT INTO product(" +
+            "product_id, " +
+            "type," +
+            "name," +
+            "description," +
+            "price) VALUES(nextval('product_id_seq'), ?, ?, ?, ?) RETURNING product_id";
 
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
     public ProductJdbcDao(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = checkNotNull(jdbcTemplate, "Arg 'jdbcTemplate' mustn't be null");
+        this.jdbcTemplate = checkNotNull(jdbcTemplate);
     }
 
     @Transactional(propagation = Propagation.MANDATORY, readOnly = true)
@@ -43,7 +45,19 @@ public class ProductJdbcDao implements ProductDao {
                     .setName(rs.getString("name"))
                     .setDescription(rs.getString("description"))
                     .setPrice(rs.getBigDecimal("price"))
-                    .setCreatedTimepoint(LocalDateTime.parse(rs.getString("created_timepoint"), TIMEPOINT_FORMATTER))
+                    .setCreatedTimepoint(rs.getTimestamp("created_timepoint").toLocalDateTime())
         );
+    }
+
+    @Override
+    public int insertProduct(Product product) {
+        checkNotNull(product);
+        Object[] queryArgs = {
+                product.getType().getValue(),
+                product.getName(),
+                product.getDescription(),
+                product.getPrice()
+        };
+        return jdbcTemplate.queryForObject(INSERT_PRODUCT_QUERY, queryArgs, Integer.class);
     }
 }

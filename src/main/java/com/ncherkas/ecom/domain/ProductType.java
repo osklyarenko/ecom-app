@@ -1,5 +1,8 @@
 package com.ncherkas.ecom.domain;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -21,10 +24,12 @@ public enum ProductType {
         this.value = value;
     }
 
+    @JsonValue
     public String getValue() {
         return value;
     }
 
+    @JsonCreator
     public static Optional<ProductType> fromValue(String value) {
         return Arrays.stream(values())
                 .filter(productType -> productType.getValue().equals(value))

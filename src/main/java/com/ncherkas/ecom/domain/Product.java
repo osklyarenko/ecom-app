@@ -76,4 +76,16 @@ public class Product {
     public LocalDateTime getCreatedTimepoint() {
         return createdTimepoint;
     }
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "id=" + id +
+                ", type=" + type +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", price=" + price +
+                ", createdTimepoint=" + createdTimepoint +
+                '}';
+    }
 }

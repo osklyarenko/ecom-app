@@ -1,13 +1,13 @@
-package com.ncherkas.ecom.dao;
+package com.ncherkas.ecom.service;
 
 import com.ncherkas.ecom.domain.Product;
 
 import java.util.List;
 
 /**
- * Created by nazariycherkas on 11/26/14.
+ * Created by nazariycherkas on 11/30/14.
  */
-public interface ProductDao {
+public interface ProductService {
 
     List<Product> getAllProducts();
 
