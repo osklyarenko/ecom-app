@@ -9,7 +9,9 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.ResultSet;
 import java.util.List;
+import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -21,12 +23,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class ProductJdbcDao implements ProductDao {
 
     private static final String SELECT_ALL_QUERY = "SELECT * FROM product";
-    private static final String INSERT_PRODUCT_QUERY = "INSERT INTO product(" +
+    private static final String SELECT_BY_ID_QUERY = "SELECT * FROM product WHERE product_id = ?";
+    private static final String INSERT_QUERY = "INSERT INTO product(" +
             "product_id, " +
             "type," +
             "name," +
             "description," +
             "price) VALUES(nextval('product_id_seq'), ?, ?, ?, ?) RETURNING product_id";
+    private static final String DELETE_QUERY = "DELETE FROM product WHERE product_id = ?";
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -35,7 +39,7 @@ public class ProductJdbcDao implements ProductDao {
         this.jdbcTemplate = checkNotNull(jdbcTemplate);
     }
 
-    @Transactional(propagation = Propagation.MANDATORY, readOnly = true)
+    @Transactional(readOnly = true)
     @Override
     public List<Product> getAllProducts() {
         return jdbcTemplate.query(SELECT_ALL_QUERY, (rs, index) ->
@@ -49,6 +53,21 @@ public class ProductJdbcDao implements ProductDao {
         );
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public Optional<Product> getProductById(int productId) {
+        return jdbcTemplate.query(SELECT_BY_ID_QUERY, new Object[]{productId}, (ResultSet rs) ->
+                rs.next() ? Optional.of(DomainEntities.newProduct()
+                        .setId(rs.getInt("product_id"))
+                        .setType(ProductType.fromValue(rs.getString("type"))
+                                .orElseThrow(IllegalStateException::new))
+                        .setName(rs.getString("name"))
+                        .setDescription(rs.getString("description"))
+                        .setPrice(rs.getBigDecimal("price"))
+                        .setCreatedTimepoint(rs.getTimestamp("created_timepoint")
+                                .toLocalDateTime())) : Optional.<Product>empty());
+    }
+
     @Override
     public int insertProduct(Product product) {
         checkNotNull(product);
@@ -58,6 +77,11 @@ public class ProductJdbcDao implements ProductDao {
                 product.getDescription(),
                 product.getPrice()
         };
-        return jdbcTemplate.queryForObject(INSERT_PRODUCT_QUERY, queryArgs, Integer.class);
+        return jdbcTemplate.queryForObject(INSERT_QUERY, queryArgs, Integer.class);
+    }
+
+    @Override
+    public boolean deleteProductById(int productId) {
+        return jdbcTemplate.update(DELETE_QUERY, productId) > 0;
     }
 }
