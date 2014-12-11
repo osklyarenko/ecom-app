@@ -13,7 +13,7 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Optional;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 /**
  * Created by nazariycherkas on 11/20/14.
@@ -56,16 +56,16 @@ public class ProductJdbcDao implements ProductDao {
     @Transactional(readOnly = true)
     @Override
     public Optional<Product> getProductById(int productId) {
-        return jdbcTemplate.query(SELECT_BY_ID_QUERY, new Object[]{productId}, (ResultSet rs) ->
-                rs.next() ? Optional.of(DomainEntities.newProduct()
-                        .setId(rs.getInt("product_id"))
-                        .setType(ProductType.fromValue(rs.getString("type"))
-                                .orElseThrow(IllegalStateException::new))
-                        .setName(rs.getString("name"))
-                        .setDescription(rs.getString("description"))
-                        .setPrice(rs.getBigDecimal("price"))
-                        .setCreatedTimepoint(rs.getTimestamp("created_timepoint")
-                                .toLocalDateTime())) : Optional.<Product>empty());
+        return jdbcTemplate.query(SELECT_BY_ID_QUERY, new Object[]{ productId }, (ResultSet rs) ->
+            rs.next() ? Optional.of(DomainEntities.newProduct()
+                    .setId(rs.getInt("product_id"))
+                    .setType(ProductType.fromValue(rs.getString("type"))
+                            .orElseThrow(IllegalStateException::new))
+                    .setName(rs.getString("name"))
+                    .setDescription(rs.getString("description"))
+                    .setPrice(rs.getBigDecimal("price"))
+                    .setCreatedTimepoint(rs.getTimestamp("created_timepoint")
+                            .toLocalDateTime())) : Optional.<Product>empty());
     }
 
     @Override
