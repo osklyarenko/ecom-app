@@ -1,4 +1,3 @@
 ecom-app
 ========
 
-Test app
